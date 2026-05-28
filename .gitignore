@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+artifacts/
+.venv/
+*.joblib
+.pytest_cache/
+.ruff_cache/
