@@ -162,20 +162,15 @@ with tab2:
 
     st.subheader("CCF Distribution — Model vs Regulatory Floor")
 
-    hist_data = pd.DataFrame({
-        "CCF (Model Mean)": preds["ccf_mean"],
-        "CCF (Model P90)": preds["ccf_p90"],
-    })
-    st.bar_chart(
-        hist_data.melt(var_name="Type", value_name="CCF")
-        .groupby(["Type", pd.cut(
-            hist_data.melt(var_name="Type", value_name="CCF")["CCF"],
-            bins=20
-        )])
-        .size()
-        .unstack(level=0)
-        .fillna(0),
-    )
+    bins = np.linspace(0, 1, 21)
+    bin_labels = [f"{b:.2f}" for b in bins[:-1]]
+    hist_mean = np.histogram(preds["ccf_mean"], bins=bins)[0]
+    hist_p90 = np.histogram(preds["ccf_p90"], bins=bins)[0]
+    hist_df = pd.DataFrame({
+        "CCF Mean": hist_mean,
+        "CCF P90": hist_p90,
+    }, index=bin_labels)
+    st.bar_chart(hist_df)
 
     st.subheader("EAD Comparison: Model vs Regulatory")
 
@@ -233,10 +228,9 @@ with tab3:
 
     st.subheader("Prediction Error Distribution")
     errors = ccf_pred - y_val
-    error_df = pd.DataFrame({"Prediction Error (CCF)": errors})
-    st.bar_chart(
-        error_df.value_counts(bins=30, sort=False)
-    )
+    err_counts, err_edges = np.histogram(errors, bins=30)
+    err_labels = [f"{e:.3f}" for e in err_edges[:-1]]
+    st.bar_chart(pd.DataFrame({"Count": err_counts}, index=err_labels))
 
     st.subheader("Feature Importance")
     importance = ccf_mean_model.feature_importances_
